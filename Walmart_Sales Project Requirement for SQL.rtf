@@ -1,0 +1,666 @@
+{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Courier New;}{\f1\fnil Consolas;}{\f2\fnil\fcharset0 Consolas;}}
+{\colortbl ;\red0\green0\blue255;\red0\green0\blue0;\red128\green128\blue128;\red0\green128\blue0;\red128\green0\blue0;\red255\green0\blue0;\red255\green0\blue255;\red0\green77\blue187;\red192\green80\blue77;}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\f0\fs22\lang1033 # Walmart Sales Data Analysis\par
+\par
+## About\par
+\par
+This project aims to explore the Walmart Sales data to understand top performing branches and products, sales trend of of different products, customer behaviour. The aims is to study how sales strategies can be improved and optimized. The dataset was obtained from the [Kaggle Walmart Sales Forecasting Competition](https://www.kaggle.com/c/walmart-recruiting-store-sales-forecasting).\par
+\par
+\par
+## Purposes Of The Project\par
+\par
+The major aim of thie project is to gain insight into the sales data of Walmart to understand the different factors that affect sales of the different branches.\par
+\par
+## About Data\par
+\par
+The dataset was obtained from the [Kaggle Walmart Sales Forecasting Competition](https://www.kaggle.com/c/walmart-recruiting-store-sales-forecasting). This dataset contains sales transactions from a three different branches of Walmart, respectively located in Mandalay, Yangon and Naypyitaw. The data contains 17 columns and 1000 rows:\par
+\par
+| Column                  | Description                             | Data Type      |\par
+| :---------------------- | :-------------------------------------- | :------------- |\par
+| invoice_id              | Invoice of the sales made               | VARCHAR(30)    |\par
+| branch                  | Branch at which sales were made         | VARCHAR(5)     |\par
+| city                    | The location of the branch              | VARCHAR(30)    |\par
+| customer_type           | The type of the customer                | VARCHAR(30)    |\par
+| gender                  | Gender of the customer making purchase  | VARCHAR(10)    |\par
+| product_line            | Product line of the product solf        | VARCHAR(100)   |\par
+| unit_price              | The price of each product               | DECIMAL(10, 2) |\par
+| quantity                | The amount of the product sold          | INT            |\par
+| VAT                 | The amount of tax on the purchase       | FLOAT(6, 4)    |\par
+| total                   | The total cost of the purchase          | DECIMAL(10, 2) |\par
+| date                    | The date on which the purchase was made | DATE           |\par
+| time                    | The time at which the purchase was made | TIMESTAMP      |\par
+| payment_method                 | The total amount paid                   | DECIMAL(10, 2) |\par
+| cogs                    | Cost Of Goods sold                      | DECIMAL(10, 2) |\par
+| gross_margin_percentage | Gross margin percentage                 | FLOAT(11, 9)   |\par
+| gross_income            | Gross Income                            | DECIMAL(10, 2) |\par
+| rating                  | Rating                                  | FLOAT(2, 1)    |\par
+\par
+\par
+\par
+\par
+
+\pard\b ## NOTE: \b0 Revenue And Profit Calculations\par
+\par
+$ COGS = unitsPrice * quantity $\par
+\par
+$ TAX = 5\\% * COGS $\par
+\par
+$TAX$ is added to the $COGS$ and this is what is billed to the customer.\par
+\par
+$ total(gross_sales) = TAX + COGS $\par
+\par
+$ grossProfit(grossIncome) = total(gross_sales) - COGS $\par
+\par
+**Gross Margin** is gross profit expressed in percentage of the total(gross profit/revenue)\par
+
+\pard\par
+\par
+\par
+\par
+\par
+### Analysis List\par
+\par
+1. Product Analysis\par
+\par
+> Conduct analysis on the data to understand the different product lines, the products lines performing best and the product lines that need to be improved.\par
+\par
+2. Sales Analysis\par
+\par
+> This analysis aims to answer the question of the sales trends of product. The result of this can help use measure the effectiveness of each sales strategy the business applies and what modificatoins are needed to gain more sales.\par
+\par
+3. Customer Analysis\par
+\par
+> This analysis aims to uncover the different customers segments, purchase trends and the profitability of each customer segment.\par
+\par
+## Approach Used\par
+\par
+1. **Data Wrangling:** This is the first step where inspection of data is done to make sure **NULL** values and missing values are detected and data replacement methods are used to replace, missing or **NULL** values.\par
+
+\pard\b > a. Create a database\par
+> b. insert the data(Table).\par
+> c. Select all columns and use the WHERE to filter out null values in them. There are no null values in our Records. \par
+
+\pard\par
+
+\pard\cf1\b0\f1\fs19 CREATE\cf2  \cf1 DATABASE\cf2  Portfolio_Project\cf3 ;\cf2\par
+\par
+\cf1 USE\cf2  Portfolio_Project\cf3 ;\cf2\par
+\par
+\cf1 SELECT\cf2  \cf3 *\cf2\par
+\cf1 FROM\cf2  [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+
+\pard\cf0\f0\fs22\par
+\par
+
+\pard\cf4\f1\fs19 --Change Column Names to Match records\cf2\par
+ \cf1 EXEC\cf2  \cf5 SP_RENAME\cf1  \cf6 '[MBA].[Walmart_Sales_Data].TOTAL'\cf3 ,\cf2\par
+ \cf6 'Total_Sales'\cf3 ,\cf2  \cf6 'Column'\cf2\par
+\par
+ \cf1 EXEC\cf2  \cf5 SP_RENAME\cf1  \cf6 '[MBA].[Walmart_Sales_Data].Tax_5'\cf3 ,\cf2\par
+ \cf6 'Tax'\cf3 ,\cf2  \cf6 'Column'\cf2\par
+\par
+ \cf1 EXEC\cf2  \cf5 SP_RENAME\cf1  \cf6 '[MBA].[Walmart_Sales_Data].Payment'\cf3 ,\cf2\par
+ \cf6 'Payment_Type'\cf3 ,\cf2  \cf6 'Column'\cf0\f0\fs22\par
+
+\pard\par
+\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf3 *\cf2\par
+\cf1 FROM\cf2  MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 WHERE\cf2   [Invoice_ID]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+\tab    [Branch] \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [City]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Customer_type]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Gender]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Product_line]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Unit_price]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Quantity]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Tax]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Total_Sales]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Date]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Time]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [Payment_Type]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [cogs]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [gross_margin_percentage]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+       [gross_income]  \cf3 IS\cf2  \cf3 NULL\cf2  \cf3 OR\cf2\par
+
+\pard        [Rating] \cf3 IS\cf2  \cf3 NULL;\par
+\par
+\cf0\f0\fs22\par
+2. **Feature Engineering:** This will help us generate some new columns from existing Table.\par
+\par
+> A. Add a new column named 'time_of_day' to give insight of sales in the Morning, Afternoon and Evening. This will help answer the question on which part of the day most sales are made.\par
+\par
+\cf4\f2\fs19 --\f1 Add the column Time_of_day \cf0\f0\fs22\par
+
+\pard\cf1\f1\fs19 ALTER\cf2  \cf1 TABLE\cf2  [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+
+\pard\cf1 ADD\cf2  Time_of_Day  \cf1 VARCHAR\cf3 (\cf2 20\cf3 )\par
+\f0\par
+
+\pard\cf4\f2 --\f1 Check to ensures the right records goes into the table\par
+\cf1 SELECT\cf2  [Time]\cf3 ,\cf2\par
+\tab\tab\cf1 CASE\cf2  \par
+\tab\tab\cf1 WHEN\cf2  [Time] \cf3 BETWEEN\cf2  \cf6 '00:00:00'\cf2  \cf3 AND\cf2  \cf6 '12:00:00'\cf2  \cf1 THEN\cf2  \cf6 'Morning'\cf2\par
+        \f2\tab\cf1\f1 WHEN\cf2  [Time] \cf3 BETWEEN\cf2  \cf6 '12:01:00'\cf2  \cf3 AND\cf2  \cf6 '16:00:00'\cf2  \cf1 THEN\cf2  \cf6 'Afternoon'\cf2\par
+        \f2\tab\cf1\f1 ELSE\cf2  \cf6 'Evening'\cf2\par
+    \f2\tab\tab\cf1\f1 END\cf2  \cf1 AS\cf2  time_of_day\par
+\cf1 FROM\cf2  MBA\cf3 .\cf2 Walmart_Sales_Data\cf3 ;\cf2\par
+\par
+\cf4\f2 --\f1 Insertion of records into the column (Time_of_day)\cf2\par
+\cf7 UPDATE\cf2  MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 SET\cf2  [Time_of_Day] \cf3 =\cf1  \cf3 (\cf1 CASE\cf2  \par
+\tab\tab\cf1 WHEN\cf2  [Time] \cf3 BETWEEN\cf2  \cf6 '00:00:00'\cf2  \cf3 AND\cf2  \cf6 '12:00:00'\cf2  \cf1 THEN\cf2  \cf6 'Morning'\cf2\par
+       \f2\tab\cf1\f1 WHEN\cf2  [Time] \cf3 BETWEEN\cf2  \cf6 '12:01:00'\cf2  \cf3 AND\cf2  \cf6 '16:00:00'\cf2  \cf1 THEN\cf2  \cf6 'Afternoon'\cf2\par
+        \cf1 ELSE\cf2  \cf6 'Evening'\cf2  \par
+
+\pard\tab\tab\cf1 END\cf2  \cf3 );\cf0\f0\fs22\par
+\par
+> B. Add a new column named 'day_name' that contains the extracted days of the week on which the given transaction took place (Mon, Tue, Wed, Thur, Fri). This will help answer the question on which week of the day each branch is busiest.\par
+\par
+
+\pard\cf4\f2\fs19 --\f1 Add the column Day_Name \cf2\par
+\cf1 ALTER\cf2  \cf1 TABLE\cf2  [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+\cf1 ADD\cf2  Day_Name \cf1 Varchar\cf3 (\cf2 20\cf3 );\cf2\par
+\par
+\par
+\cf4\f2 --\f1 Check to ensures the right records goes into the table\cf2\par
+\cf1 SELECT\cf2  \cf7 DATENAME\cf3 (\cf1 WEEKDAY\cf3 ,\cf2  \cf1 Date\cf3 )\cf2  \cf1 AS\cf2  Day_of_week\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\cf3 ;\cf2\par
+\par
+\par
+\cf4\f2 --\f1 Insertion of records into the column (Day_Name)\cf2\par
+\cf7 UPDATE\cf2  MBA\cf3 .\cf2 Walmart_Sales_Data\par
+
+\pard\cf1 SET\cf2  [Day_Name] \cf3 =\cf2  \cf7 DATENAME\cf3 (\cf1 WEEKDAY\cf3 ,\cf2  \cf1 Date\cf3 );\cf0\f0\fs22\par
+\par
+\par
+> C. Add a new column named 'month_name' that contains the extracted months of the year on which the given transaction took place (Jan, Feb, Mar). Help determine which month of the year has the most sales and profit.\par
+\par
+
+\pard\cf4\f1\fs19 --Add the column Month_Name \cf2\par
+\cf1 ALTER\cf2  \cf1 Table\cf2  MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 ADD\cf2  Month_Name \cf1 Varchar\cf3 (\cf2 20\cf3 );\cf2\par
+\par
+\cf4 --Check to ensures the right records goes into the table\cf2\par
+\cf1 SELECT\cf2  \cf7 DATENAME\cf3 (\cf7 MONTH\cf3 ,\cf1 Date\cf3 )\cf2  \cf1 AS\cf2  Month_Name\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\cf3 ;\cf2\par
+\par
+\cf4 --Insertion of records into the column (Month_Name)\cf2\par
+\cf7 UPDATE\cf2  MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 SET\cf2  [Month_Name] \cf3 =\cf2  \cf7 DATENAME\cf3 (\cf7 MONTH\cf3 ,\cf1 Date\cf3 )\cf2\par
+
+\pard\cf0\f0\fs22\par
+\par
+3. **Exploratory Data Analysis (EDA):** Exploratory data analysis is done to answer the listed questions and aims of this project.\par
+\par
+\par
+Business Questions To Answer\par
+\par
+### Generic Question\par
+\par
+1. How many unique cities does the data have?\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf7 Count\cf3 (\cf1 DISTINCT\cf2  City\cf3 )\cf2  \cf8\f2 AS\cf2  \f1 City_Count\par
+\cf1 FROM\cf2  \par
+
+\pard [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+\par
+\cf9\b\fs22 City_Count\par
+3\par
+\cf0\b0\f0\par
+2. In which city is each branch?\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 DISTINCT\cf2  City\cf3 ,\cf2\par
+Branch\par
+\cf1 FROM\cf2  \par
+
+\pard [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\cf3 ;\par
+\cf9\par
+\b\f2\fs22 City\tab\tab Branch\par
+Mandalay\tab B\par
+Naypyitaw\tab C\par
+Yangon\tab A\b0\par
+\cf0\f0\par
+### Product\par
+\par
+1. How many unique product lines does the data have?\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf7 Count\cf3 (\cf1 DISTINCT\cf2  Product_line\cf3 )\cf2  \cf1 AS\cf2  Product_Line_Cnt\par
+\cf1 FROM\cf2  \par
+
+\pard [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\cf3 ;\par
+\par
+\cf9\b\fs22 Product_Line_Cnt\par
+6\par
+\f0\par
+\cf0\b0 2. What is the most common payment method?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 Top\cf2  1 [Payment_Type]\cf3 ,\cf2  \par
+\cf7 Count\cf3 (\cf2 [Payment_Type]\cf3 )\cf2  \cf1 AS\cf2  Payment_Type_Cnt\par
+\cf1 FROM\cf2  \par
+[MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+\cf1 Group\cf2  \cf1 By\cf2  [Payment_Type]\par
+
+\pard\cf1 Order\cf2  \cf1 by\cf2  2 \cf1 Desc\cf3 ;\par
+\par
+\cf9\b\fs22 Payment_Type\tab Payment_Type_Cnt\par
+Ewallet\tab\f2\tab\f1 345\par
+\cf3\b0\fs19\par
+\cf0\f0\fs22 3. What is the most selling product line?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 Top\cf2  1 [Product_line]\cf3 ,\cf2  \par
+\cf7 Count\cf3 (\cf2 [Product_line]\cf3 )\cf2  \cf1 AS\cf2  Payment_Type_Cnt\par
+\cf1 FROM\cf2  \par
+[MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+\cf1 Group\cf2  \cf1 By\cf2  [Product_line]\par
+
+\pard\cf1 Order\cf2  \cf1 by\cf2  2 \cf1 Desc\cf3 ;\par
+\par
+\cf9\b\fs22 Product_line\tab\f2\tab\f1 Payment_Type_Cnt\par
+Fashion accessories\tab 178\par
+\f0\par
+\cf0\b0 4. What is the total revenue by month?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  [Month_Name]\cf3 ,\cf2\par
+\cf7 Sum\cf3 (\cf2 [Total_Sales] \cf3 )\cf2  \cf1 As\cf2  Total_Revenue\par
+\cf1 FROM\cf2  \par
+[MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+
+\pard\cf1 GROUP\cf2  \cf1 BY\cf2  [Month_Name]\f2 ;\f1\par
+\par
+\cf9\b\fs22 Month_Name\tab Total_Revenue\par
+February\tab 97219.3739280701\par
+January\tab 116291.868041039\par
+March\tab\f2\tab\f1 109455.507236481\par
+\cf2\b0\fs19\par
+\cf0\f0\fs22\par
+5. What month had the largest COGS?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 TOP\cf2  1 [Month_Name]\cf3 ,\cf2  \par
+\cf7 MAX\cf3 (\cf2 cogs\cf3 )\cf2  \cf1 AS\cf2  Largest_COGs\par
+\cf1 FROM\cf2  \par
+[MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  [Month_Name]\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 Desc\cf3 ;\par
+\par
+\cf9\b\fs22 Month_Name\tab Largest_COGs\par
+February\tab 993\par
+\f0\par
+\cf0\b0 6. What product line had the largest revenue?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 Top\cf2  1 Product_line\cf3 ,\cf2  \par
+\cf7 MAX\cf3 (\cf2 [Total_Sales]\cf3 )\cf2  \cf1 AS\cf2  Largest_Revenue\par
+\cf1 FROM\cf2  \par
+[MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  Product_line\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 Desc\cf3 ;\par
+\par
+\cf9\b\fs22 Product_line\tab\f2\tab\f1 Largest_Revenue\par
+Fashion accessories\tab 1042.65002441406\f0\par
+\cf0\b0\par
+7. What is the city with the largest revenue?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 Top\cf2  1 City\cf3 ,\cf2  \par
+\cf7 MAX\cf3 (\cf2 [Total_Sales]\cf3 )\cf2  \cf1 AS\cf2  Largest_Revenue\par
+\cf1 FROM\cf2  \par
+[MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  City\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 Desc\cf3 ;\par
+\par
+\cf9\b\fs22 City\tab\f2\tab\f1 Largest_Revenue\par
+Naypyitaw\tab 1042.65002441406\par
+\f0\par
+\cf0\b0 8. What product line had the largest TAX?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 Top\cf2  1 Product_line\cf3 ,\cf2  \par
+\cf7 MAX\cf3 (\cf2 [Tax]\cf3 )\cf2  \cf1 AS\cf2  Largest_Tax\par
+\cf1 FROM\cf2  \par
+[MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  Product_line\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 Desc\cf3 ;\par
+\cf9\b\fs22\par
+Product_line\tab\f2\tab\f1 Largest_Tax\par
+Fashion accessories\tab 49.6500015258789\par
+\f0\par
+\cf0\b0 9. Fetch each product line and add a column to those product line showing "Good", "Bad". Good if its greater than average sales\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2   \f2  \f1 [Product_line] \cf3 ,\cf2  \par
+\tab\f2   \f1 [Total_Sales]\cf3 ,\cf2\par
+\tab\tab\cf1 CASE\cf2\par
+\tab\tab\tab\cf1 WHEN\cf2  [Total_Sales] \cf3 >\cf1  \cf3 (\cf1 SELECT\cf2  \cf7 AVG\cf3 (\cf2 [Total_Sales]\cf3 )\cf2  \cf1 FROM\cf2  [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\cf3 )\cf2  \par
+\tab\tab\tab\cf1 THEN\cf2  \cf6 'Good'\cf2\par
+\tab\tab\tab\cf1 ELSE\cf2  \cf6 'Bad'\cf2\par
+\tab\tab\tab\cf1 END\cf2  \cf1 AS\cf2  Sales_Performance\par
+\cf1 FROM\cf2\par
+
+\pard [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\cf3 ;\par
+\par
+\cf9\b\fs22 Product_line\tab\f2\tab\tab\f1 Total_Sales\tab Sales_Performance\par
+Health and beauty\tab\f2\tab\tab\f1 548.971496582031\tab Good\par
+Electronic accessories\tab\f2\tab\f1 80.2200012207031\tab Bad\par
+Home and lifestyle\tab\f2\tab\f1 340.525512695313\tab Good\par
+Health and beauty\tab\f2\tab\tab\f1 489.048004150391\tab Good\par
+Sports and travel\tab\f2\tab\tab\f1 634.378479003906\tab Good\par
+Electronic accessories\tab\f2\tab\f1 627.616516113281\tab Good\par
+Electronic accessories\tab\f2\tab\f1 433.691986083984\tab Good\par
+Home and lifestyle\tab\f2\tab\f1 772.380004882813\tab Good\par
+Health and beauty\tab\f2\tab\tab\f1 76.1460037231445\tab Bad\par
+Food and beverages\tab\f2\tab\f1 172.746002197266\tab Bad\par
+\f2 .....................................\cf0 (EXTRACTED ONLY THE TOP 10)\cf9\f1\par
+\cf0\b0\f0\par
+\par
+10. Which branch sold more products than average product sold?\par
+\par
+
+\pard\cf1\f1\fs19 WITH\cf2  Average_Sales \cf1 AS\cf2\par
+\cf3 (\cf2\par
+\cf1 SELECT\cf2  \cf7 AVG\cf3 (\cf2 [Quantity]\cf3 )\cf2  \cf1 AS\cf2  Average_Quantity\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf3 )\cf2\par
+\par
+\cf1 SELECT\cf2  Branch\cf3 ,\cf2  \par
+\tab\cf7 Sum\cf3 (\cf2 [Quantity]\cf3 )\cf2  \cf1 AS\cf2  Total_Quantity\par
+\cf1 FROM\cf2  MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  Branch\par
+\cf1 HAVING\cf2  \cf7 Sum\cf3 (\cf2 [Quantity]\cf3 )\cf2  \cf3 >\cf1  \cf3 (\cf1 SELECT\cf2  \cf7 AVG\cf3 (\cf2 [Quantity]\cf3 )\cf2  \cf1 AS\cf2  Average_Quantity\par
+
+\pard\cf1 FROM\cf2  Average_Sales\cf3 );\par
+\par
+\par
+\cf9\b\fs22 Branch\tab Total_Quantity\par
+A\tab\f2\tab\f1 1859\par
+C\tab\f2\tab\f1 1831\par
+B\tab\f2\tab\f1 1820\par
+\cf0\b0\f0\par
+11. What is the most common product line by gender?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 TOP\cf2  1 \par
+\tab Product_line\cf3 ,\cf2\par
+\tab Gender\cf3 ,\cf2\par
+\tab\cf7 COUNT\cf3 (\cf2 Product_line\cf3 )\cf2  \cf1 AS\cf2  Product_line_Cnt\par
+\tab\cf1 FROM\cf2  [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+\tab\cf1 GROUP\cf2  \cf1 BY\cf2  Product_line\cf3 ,\cf2 Gender\par
+
+\pard\tab\cf1 ORDER\cf2  \cf1 BY\cf2  3 \cf1 Desc\par
+\par
+\cf9\b\fs22 Product_line\tab\f2\tab\f1 Gender\tab\f2\tab\f1 Product_line_Cnt\par
+Fashion accessories\tab Female\tab\f2\tab\f1 96\f0\par
+\cf0\b0\par
+12. What is the average rating of each product line?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \par
+\tab Product_line\cf3 ,\cf2\par
+\tab\cf7 Avg\cf3 (\cf2 Rating\cf3 )\cf2  \cf1 AS\cf2  Average_Rating\par
+\tab\cf1 FROM\cf2  [MBA]\cf3 .\cf2 [Walmart_Sales_Data]\par
+
+\pard\tab\cf1 GROUP\cf2  \cf1 BY\cf2  Product_line\par
+\par
+\cf9\b\fs22 Product_line\tab\f2\tab\f1 Average_Rating\par
+Fashion accessories\tab 7.02921346600136\par
+Health and beauty\tab\f2\tab\f1 7.00328945799878\par
+Electronic accessories\tab 6.92470588123097\par
+Food and beverages\tab 7.11321838970842\par
+Sports and travel\tab\f2\tab\f1 6.91626506253897\par
+Home and lifestyle\tab 6.8375\f0\par
+\cf0\b0\par
+### Sales\par
+\par
+1. Number of sales made in each time of the day per weekday\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  [Time_of_Day]\cf3 ,\cf2\par
+\cf7 COUNT\cf3 (\cf2 [Total_Sales]\cf3 )/\cf2 5 \cf1 AS\cf2  Number_of_Sales_Per_Week\f2 day\f1\par
+\cf1 FROM\cf2\par
+\cf3 (\cf2\par
+\cf1 SELECT\cf2  \par
+\tab [Total_Sales]\cf3 ,\cf2\par
+\tab [Time_of_Day]\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 WHERE\cf2  [Day_Name] \cf3 IN\cf1  \cf3 (\cf6 'Monday'\cf3 ,\cf2  \cf6 'Tuesday'\cf3 ,\cf6 'Wednesday'\cf3 ,\cf6 'Thursday'\cf3 ,\cf6 'Friday'\cf3 )\cf2\par
+\cf3 )\cf2  \cf1 AS\cf2  Sale_by_Time\par
+
+\pard\cf1 Group\cf2  \cf1 by\cf2  [Time_of_Day]\par
+\par
+\cf9\b\f2\fs22 Time_of_Day\tab\tab Number_of_Sales_Per_Weekday\par
+Evening\tab\tab 58\par
+Afternoon\tab\tab 53\par
+Morning\tab\tab 28\par
+\cf0\b0\f0\par
+2. Which of the customer types brings the most revenue?\par
+\par
+
+\pard  \cf1\f1\fs19 SELECT\cf2   \cf1 TOP\cf2  1\par
+\f2\tab\tab\f1 [Customer_type]\cf3 ,\cf2\par
+\cf7\f2\tab\tab\f1 SUM\cf3 (\cf2 [Total_Sales]\cf3 )\cf2  \cf1 AS\cf2  \f2 Most_Revenue\f1\par
+\cf1 FROM\cf3 (\cf2\par
+\cf1\f2\tab\tab\f1 SELECT\cf2  \par
+\tab\f2\tab\f1 [Total_Sales]\cf3 ,\cf2\par
+\tab\f2\tab\f1 Customer_type\par
+\cf1 FROM\cf2\par
+\f2\tab\tab\f1 MBA\cf3 .\cf2 Walmart_Sales_Data\cf3 )\cf2  \cf1 AS\cf2  Most_Revenue\par
+\cf1\f2\tab\tab\f1 GROUP\cf2  \cf1 BY\cf2  Customer_type\par
+
+\pard\cf1\f2\tab\tab\f1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 DESC\par
+\par
+\cf9\b\fs22 Customer_type\tab\f2\tab\f1 Most_Revenue\par
+Member\tab\f2\tab\tab\f1 164223.444059372\par
+\f0\par
+\cf0\b0 3. Which city has the largest tax ?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 TOP\cf2  1\par
+City\cf3 ,\cf2\par
+\cf7 SUM\cf3 (\cf2 [Tax]\cf3 )\cf2  \cf1 AS\cf2  Largest_Tax\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  City\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 DESC\par
+\cf2\par
+\cf9\b\fs22 City\tab\f2\tab\f1 Largest_Tax\par
+Naypyitaw\tab 5265.17648047209\par
+\cf0\b0\f0\par
+4. Which customer type pays the most in Tax?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf1 TOP\cf2  1\par
+Customer_type\cf3 ,\cf2\par
+\cf7 SUM\cf3 (\cf2 [Tax]\cf3 )\cf2  \cf1 AS\cf2  Most_Tax\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  Customer_type\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 DESC\par
+\par
+\cf9\b\fs22 Customer_type\tab Most_Tax\par
+Member\tab\f2\tab\f1 7820.16399610043\par
+\par
+\f0\par
+\cf0\b0 ### Customer\par
+\par
+1. How many unique customer types does the data have?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2\par
+\tab\tab\cf7 COUNT\cf3 (\cf1 DISTINCT\cf2  [Customer_type] \cf3 )\cf2  \cf1 AS\cf2  Customer_type_Cnt\par
+\cf1 FROM\cf2\par
+
+\pard MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\par
+\cf9\b\f2\fs22 Customer_type_Cnt\par
+2\par
+\par
+\cf0\b0\f0 2. How many unique payment methods does the data have?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2\par
+\tab\tab\cf7 COUNT\cf3 (\cf1 DISTINCT\cf2  [Payment_Type] \cf3 )\cf2  \cf1 AS\cf2  \f2 Payment\f1 _type_Cnt\par
+\cf1 FROM\cf2\par
+
+\pard MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\par
+\cf9\b\f2\fs22 Payment\f1 _type_Cnt\par
+3\par
+\f0\par
+\cf0\b0 3. What is the most common customer type?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2\tab\cf1 TOP\cf2  1\par
+\tab\tab [Customer_type]\cf3 ,\cf2\par
+\tab\tab\cf7 COUNT\cf1  \cf3 (\cf2 Customer_type\cf3 )\cf2  \cf1 AS\cf2  Customer_type_Cnt\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  Customer_type\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 DESC\par
+\par
+\cf9\b\fs22 Customer_type\tab Customer_type_Cnt\par
+Member\tab\f2\tab\f1 501\par
+\f0\par
+\cf0\b0 4. Which customer type buys the most?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2\tab\cf1 TOP\cf2  1\par
+\tab\tab [Customer_type]\cf3 ,\cf2\par
+\tab\tab\cf7 SUM\cf1  \cf3 (\cf2 [Quantity]\cf3 )\cf2  \cf1 AS\cf2  Quantity_Cnt\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  Customer_type\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 DESC\par
+\cf9\b\fs22\par
+Customer_type\tab Quantity_Cnt\par
+Member\tab\f2\tab\f1 2785\par
+\f0\par
+\cf0\b0 5. What is the gender of most of the customers?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2   \cf1 TOP\cf2  1\par
+\tab\tab Gender\cf3 ,\cf2\par
+\tab\tab\cf7 COUNT\cf3 (\cf2 Gender\cf3 )\cf2  \cf1 AS\cf2  Gender_Cnt\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  Gender\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 DESC\par
+\par
+\cf9\b\fs22 Gender\tab Gender_Cnt\par
+Female\tab 501\par
+\f0\par
+\cf0\b0 6. What is the gender distribution per branch?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2   \par
+\tab\tab Branch\cf3 ,\cf2\par
+\tab\tab Gender\cf3 ,\cf2\par
+\tab\tab\cf7 COUNT\cf3 (\cf2 Gender\cf3 )\cf2  \cf1 AS\cf2  Gender_Cnt\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  Branch\cf3 ,\cf2 Gender\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  1 \par
+\cf9\b\fs22\par
+Branch\tab Gender\tab Gender_Cnt\par
+A\tab\f2\tab\f1 Female\tab 161\par
+A\tab\f2\tab\f1 Male\tab\f2\tab\f1 179\par
+B\tab\f2\tab\f1 Female\tab 162\par
+B\tab\f2\tab\f1 Male\tab\f2\tab\f1 170\par
+C\tab\f2\tab\f1 Female\tab 178\par
+C\tab\f2\tab\f1 Male\tab\f2\tab\f1 150\par
+\f0\par
+\cf0\b0 7. Which time of the day do customers give most ratings?\par
+\par
+
+\pard\cf2\f1\fs19\par
+\cf1 SELECT\cf2\tab\cf1 TOP\cf2  1\par
+\tab\tab [Time_of_Day]\cf3 ,\cf2\par
+\tab\tab\cf7 SUM\cf3 (\cf2 Rating\cf3 )\cf2  \cf1 AS\cf2  Total_Ratings\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  [Time_of_Day] \par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 DESC\par
+\par
+\cf9\b\fs22 Time_of_Day\tab\f2\tab\f1 Total_Ratings\par
+Evening\tab\f2\tab\f1 2992.39999675751\par
+\f0\par
+\cf0\b0 8. Which time of the day do customers give most ratings per branch?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2   \cf1 TOP\cf2  3\par
+\tab\tab [Time_of_Day]\cf3 ,\cf2\par
+\tab\tab Branch\cf3 ,\cf2\par
+\tab\tab\cf7 SUM\cf3 (\cf2 Rating\cf3 )\cf2  \cf1 AS\cf2  Total_Ratings\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  [Time_of_Day] \cf3 ,\cf2  Branch\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  3 \cf1 DESC\par
+\par
+\cf9\b\fs22 Time_of_Day\tab Branch\tab Total_Ratings\par
+Evening\tab C\tab\f2\tab\f1 1017.99999809265\par
+Evening\tab B\tab\f2\tab\f1 1002.39999914169\par
+Evening\tab A\tab\f2\tab\f1 971.999999523163\par
+\cf0\b0\f0\par
+9. Which day fo the week has the best avg ratings?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2   \cf1 TOP\cf2  1\par
+\tab\tab [Day_Name]\cf3 ,\cf2\par
+\tab\tab\cf7 AVG\cf3 (\cf2 Rating\cf3 )\cf2  \cf1 AS\cf2  AVG_Ratings\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data\par
+\cf1 GROUP\cf2  \cf1 BY\cf2  [Day_Name]\par
+
+\pard\cf1 ORDER\cf2  \cf1 BY\cf2  2 \cf1 DESC\par
+\par
+\cf9\b\fs22 Day_Name\tab AVG_Ratings\par
+Monday\tab 7.15359999084473\par
+\par
+\f0\par
+\cf0\b0 10. Which day of the week has the best average ratings per branch?\par
+\par
+
+\pard\cf1\f1\fs19 SELECT\cf2  \cf3 *\cf2  \cf1 FROM\cf2\par
+\cf3 (\cf1 SELECT\cf2  \par
+\tab\tab [Day_Name]\cf3 ,\cf2  \par
+\tab\tab Branch\cf3 ,\cf2\par
+\tab\tab\cf7 AVG\cf3 (\cf2 Rating\cf3 )\cf2  \cf1 AS\cf2  AVG_Ratings\cf3 ,\cf2\par
+\tab\tab\cf7 DENSE_RANK\cf1  \cf3 ()\cf2  \cf1 OVER \cf3 (\cf1 ORDER\cf2  \cf1 BY\cf2  \cf7 AVG\cf3 (\cf2 Rating\cf3 )\cf2  \cf1 DESC\cf3 )\cf2  \cf1 AS\cf2  Ranking\par
+\cf1 FROM\cf2\par
+MBA\cf3 .\cf2 Walmart_Sales_Data \par
+\cf1 GROUP\cf2  \cf1 BY\cf2  [Day_Name]\cf3 ,\cf2  Branch\cf3 )\cf2  \cf1 as\cf2  Results\par
+
+\pard\cf1 WHERE\cf2  Ranking \cf3 IN\cf1  \cf3 (\cf2 1\cf3 ,\cf2 2\cf3 ,\cf2 3\cf3 )\par
+\par
+\cf9\b\fs22 Day_Name\tab Branch\tab AVG_Ratings\tab Ranking\par
+Monday\tab B\tab 7.33589738454574\tab 1\par
+Friday\tab A\tab 7.31199998855591\tab 2\par
+Friday\tab C\tab 7.27894732826634\tab 3\par
+\par
+\f0\par
+\cf0\b0\par
+\par
+}
+ 
